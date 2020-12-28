@@ -7,31 +7,59 @@
     using System.Linq;
     using System.Text.RegularExpressions;
     using global::BumpVersion.Configuration;
+    using global::BumpVersion.Utils;
     using LibGit2Sharp;
     using McMaster.Extensions.CommandLineUtils;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Logging;
     using Tomlyn;
     using Tomlyn.Model;
 
     public class BumpVersion
     {
+        private const string ConfigurationFileName = ".bumpversion.cfg";
+
         [Argument(0)]
         [Required]
         public string Part { get; }
 
-        private const string ConfigurationFileName = ".bumpversion.cfg";
+        private readonly ILogger logger;
+        private readonly IRepo repo;
+
+        public BumpVersion(ILogger<BumpVersion> logger, IRepo repo)
+        {
+            this.logger = logger;
+            this.repo = repo;
+        }
 
         public static int Main(string[] args)
         {
-            return CommandLineApplication.Execute<BumpVersion>(args);
+            var services = new ServiceCollection()
+              .AddSingleton<IConsole>(PhysicalConsole.Singleton)
+              .AddScoped<IRepo, Repo>()
+              .AddLogging(configure => configure.AddConsole())
+              .BuildServiceProvider();
+
+            var app = new CommandLineApplication<BumpVersion>();
+            app.Conventions
+                .UseDefaultConventions()
+                .UseConstructorInjection(services);
+            return app.Execute(args);
         }
 
-        private void OnExecute()
+        private int OnExecute()
         {
-            var repo = new Repository(".");
+            if (!this.repo.SetUpRepo())
+            {
+                this.logger.LogError("Sorry, the current folder is not a git repo!");
+                return 1;
+            }
 
-            Signature author = repo.Config.BuildSignature(DateTimeOffset.Now);
-
-            var status = repo.RetrieveStatus();
+            if (!this.repo.IsClean)
+            {
+                this.logger.LogError("Sorry, your repo is not clean!");
+                return 1;
+            }
 
             GlobalConfiguration globalConfiguration = null;
             List<FileConfiguration> fileConfigurations = null;
@@ -94,20 +122,27 @@
                     file = file.Replace(search, replace);
 
                     File.WriteAllText(fileConfiguration.File, file);
-
-                    Commands.Stage(repo, fileConfiguration.File);
                 }
 
                 bumpVersionConfigFileContent = bumpVersionConfigFileContent.Replace($"\"{currentVersion}\"", $"\"{newVersion}\"");
 
                 File.WriteAllText(ConfigurationFileName, bumpVersionConfigFileContent);
 
-                Commands.Stage(repo, ConfigurationFileName);
+                var filesToCommit = fileConfigurations.Select(config => config.File).Append(ConfigurationFileName);
 
-                repo.Commit(message, author, author);
+                if (globalConfiguration.Commit)
+                {
+                    this.repo.Commit(message, filesToCommit.ToArray());
+                    if (globalConfiguration.Tag)
+                    {
+                        this.repo.Tag(tagName, message);
+                    }
+                }
 
                 Console.WriteLine(message);
             }
+
+            return 0;
         }
 
         private string FormatVersion(string input, int major, int minor, int patch)
@@ -129,20 +164,19 @@
 
         private FileConfiguration GetFileConfiguration(TomlTable bumpversionFileConfiguration)
         {
-            var fileConfiguration = new FileConfiguration();
-            fileConfiguration.File = bumpversionFileConfiguration["file"] as string;
-
             bumpversionFileConfiguration.TryGetValue("parse", out var parseObj);
-            fileConfiguration.Parse = parseObj as string ?? FileConfiguration.Defaults.Parse;
-
             bumpversionFileConfiguration.TryGetValue("serialize", out var serializeObj);
-            fileConfiguration.Serialize = serializeObj as string ?? FileConfiguration.Defaults.Serialize;
-
             bumpversionFileConfiguration.TryGetValue("search", out var searchObj);
-            fileConfiguration.Search = searchObj as string ?? FileConfiguration.Defaults.Search;
-
             bumpversionFileConfiguration.TryGetValue("replace", out var replaceObj);
-            fileConfiguration.Replace = replaceObj as string ?? FileConfiguration.Defaults.Replace;
+
+            var fileConfiguration = new FileConfiguration
+            {
+                File = bumpversionFileConfiguration["file"] as string,
+                Parse = parseObj as string ?? FileConfiguration.Defaults.Parse,
+                Serialize = serializeObj as string ?? FileConfiguration.Defaults.Serialize,
+                Search = searchObj as string ?? FileConfiguration.Defaults.Search,
+                Replace = replaceObj as string ?? FileConfiguration.Defaults.Replace,
+            };
 
             return fileConfiguration;
         }
