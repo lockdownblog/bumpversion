@@ -8,7 +8,6 @@
     using System.Text.RegularExpressions;
     using global::BumpVersion.Configuration;
     using global::BumpVersion.Utils;
-    using LibGit2Sharp;
     using McMaster.Extensions.CommandLineUtils;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
@@ -19,10 +18,6 @@
     {
         private const string ConfigurationFileName = ".bumpversion.cfg";
 
-        [Argument(0)]
-        [Required]
-        public string Part { get; }
-
         private readonly ILogger logger;
         private readonly IRepo repo;
 
@@ -31,6 +26,10 @@
             this.logger = logger;
             this.repo = repo;
         }
+
+        [Argument(0)]
+        [Required]
+        public string Part { get; }
 
         public static int Main(string[] args)
         {
@@ -49,6 +48,9 @@
 
         private int OnExecute()
         {
+            GlobalConfiguration globalConfiguration = null;
+            List<FileConfiguration> fileConfigurations = new List<FileConfiguration>();
+
             if (!this.repo.SetUpRepo())
             {
                 this.logger.LogError("Sorry, the current folder is not a git repo!");
@@ -61,9 +63,6 @@
                 return 1;
             }
 
-            GlobalConfiguration globalConfiguration = null;
-            List<FileConfiguration> fileConfigurations = null;
-
             var bumpVersionConfigFileContent = File.ReadAllText(ConfigurationFileName);
 
             var doc = Toml.Parse(bumpVersionConfigFileContent);
@@ -72,9 +71,30 @@
             var bumpversionConfiguration = table["bumpversion"] as TomlTable;
             globalConfiguration = this.GetGlobalConfiguration(bumpversionConfiguration);
 
-            fileConfigurations = table
-                .Where(element => element.Key.StartsWith("bumpversion-file-"))
-                .Select(element => this.GetFileConfiguration(element.Value as TomlTable)).ToList();
+            if (bumpversionConfiguration.TryGetToml("file", out var tomlObject))
+            {
+                var fileTables = tomlObject as TomlTable;
+
+                if (fileTables.TryGetValue("file", out var fileName))
+                {
+                    fileConfigurations.Add(this.GetFileConfiguration(fileTables));
+                }
+                else
+                {
+                    for (int idx = 0; idx < int.MaxValue; idx++)
+                    {
+                        if (fileTables.TryGetToml(idx.ToString(), out var tomlFileObject))
+                        {
+                            var tomlFile = tomlFileObject as TomlTable;
+                            fileConfigurations.Add(this.GetFileConfiguration(tomlFile));
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
 
             Regex expresion = new Regex(globalConfiguration.Parse, RegexOptions.Compiled);
 

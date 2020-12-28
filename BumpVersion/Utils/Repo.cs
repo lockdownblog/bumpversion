@@ -3,7 +3,7 @@
     using System;
     using LibGit2Sharp;
 
-    public class Repo : IRepo
+    public sealed class Repo : IRepo, IDisposable
     {
         private Repository repo;
         private Signature author;
@@ -43,5 +43,9 @@
             this.repo.ApplyTag(tag, this.author, tagMessage);
         }
 
+        public void Dispose()
+        {
+            this.repo.Dispose();
+        }
     }
 }
