@@ -1,16 +1,16 @@
 ﻿namespace BumpVersion
 {
     using System;
+    using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     using System.IO;
     using System.Linq;
-    using System.ComponentModel.DataAnnotations;
+    using System.Text.RegularExpressions;
+    using global::BumpVersion.Configuration;
+    using LibGit2Sharp;
     using McMaster.Extensions.CommandLineUtils;
     using Tomlyn;
     using Tomlyn.Model;
-    using global::BumpVersion.Configuration;
-    using System.Collections.Generic;
-    using System.Text.RegularExpressions;
-    using LibGit2Sharp;
 
     public class BumpVersion
     {
@@ -28,6 +28,8 @@
         private void OnExecute()
         {
             var repo = new Repository(".");
+
+            Signature author = repo.Config.BuildSignature(DateTimeOffset.Now);
 
             var status = repo.RetrieveStatus();
 
@@ -102,20 +104,20 @@
 
                 Commands.Stage(repo, ConfigurationFileName);
 
+                repo.Commit(message, author, author);
+
                 Console.WriteLine(message);
             }
         }
 
         private string FormatVersion(string input, int major, int minor, int patch)
         {
-
             Dictionary<string, string> replacements = new Dictionary<string, string>
                 {
                     { "{major}", major.ToString() },
                     { "{minor}", minor.ToString() },
                     { "{patch}", patch.ToString() },
                 };
-
 
             foreach (var (key, value) in replacements)
             {
