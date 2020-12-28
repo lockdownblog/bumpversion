@@ -15,8 +15,12 @@
 
     <Authors>fferegrino</Authors>
     <Title>bumpversion</Title>
-    <PackageDescription>Version-bump your software with a single command!</PackageDescription>
-    <Description>Version-bump your software with a single command!</Description>
+    <PackageDescription>A small command line tool to simplify releasing software by updating all
+version strings in your source code by the correct increment. Also creates
+commits and tags.</PackageDescription>
+    <Description>A small command line tool to simplify releasing software by updating all
+version strings in your source code by the correct increment. Also creates
+commits and tags.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/lockdownblog/bumpversion/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/lockdownblog/bumpversion/</RepositoryUrl>
