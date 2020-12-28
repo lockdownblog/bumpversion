@@ -92,13 +92,15 @@
                     file = file.Replace(search, replace);
 
                     File.WriteAllText(fileConfiguration.File, file);
-                }
 
+                    Commands.Stage(repo, fileConfiguration.File);
+                }
 
                 bumpVersionConfigFileContent = bumpVersionConfigFileContent.Replace($"\"{currentVersion}\"", $"\"{newVersion}\"");
 
                 File.WriteAllText(ConfigurationFileName, bumpVersionConfigFileContent);
 
+                Commands.Stage(repo, ConfigurationFileName);
 
                 Console.WriteLine(message);
             }
