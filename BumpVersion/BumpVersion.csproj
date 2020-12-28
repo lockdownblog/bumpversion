@@ -14,14 +14,18 @@
 
     <Authors>fferegrino</Authors>
     <Title>bumpversion</Title>
-    <!-- <PackageDescription>A static website generator</PackageDescription> -->
-    <!-- <Description>A static website generator</Description> -->
+    <PackageDescription>Version-bump your software with a single command!</PackageDescription>
+    <Description>Version-bump your software with a single command!</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/lockdownblog/bumpversion/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/lockdownblog/bumpversion/</RepositoryUrl>
-    <!-- <PackageIcon>icon.png</PackageIcon> -->
-    <!-- <PackageTags>static;static-website;website;website-generator;html;jekyll;hugo</PackageTags> -->
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageTags>versioning;semantic-versioning;</PackageTags>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\Images\icon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
 
   <PropertyGroup>
       <CodeAnalysisRuleSet>../style.ruleset</CodeAnalysisRuleSet>
