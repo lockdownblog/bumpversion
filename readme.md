@@ -1,13 +1,13 @@
+![bumpversion](Images/GitHub-VersionBump.png)
 
-bumpversion
-===========
+[![Nuget](https://img.shields.io/nuget/v/bumpversion?color=B159FE&logoColor=84EBD4&style=flat-square)](https://www.nuget.org/packages/BumpVersion/) ![Checks](https://img.shields.io/github/checks-status/lockdownblog/bumpversion/main?color=84EBD4&logoColor=84EBD4&style=flat-square)
+
 
 ## Overview
 
 Version-bump your software with a single command!
 
-A small command line tool to simplify releasing software by updating all
-version strings in your source code by the correct increment. Also creates
+A small command line tool to simplify releasing software by updating all version strings in your source code by the correct increment. Also creates
 commits and tags.
 
 ### Install
