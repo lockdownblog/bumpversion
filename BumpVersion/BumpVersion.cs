@@ -10,6 +10,7 @@
     using global::BumpVersion.Configuration;
     using System.Collections.Generic;
     using System.Text.RegularExpressions;
+    using LibGit2Sharp;
 
     public class BumpVersion
     {
@@ -26,6 +27,10 @@
 
         private void OnExecute()
         {
+            var repo = new Repository(".");
+
+            var status = repo.RetrieveStatus();
+
             GlobalConfiguration globalConfiguration = null;
             List<FileConfiguration> fileConfigurations = null;
 
@@ -93,6 +98,7 @@
                 bumpVersionConfigFileContent = bumpVersionConfigFileContent.Replace($"\"{currentVersion}\"", $"\"{newVersion}\"");
 
                 File.WriteAllText(ConfigurationFileName, bumpVersionConfigFileContent);
+
 
                 Console.WriteLine(message);
             }
