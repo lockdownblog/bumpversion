@@ -1,0 +1,15 @@
+bumpversion
+===========
+
+## Overview  
+
+Version-bump your software with a single command!
+
+A small command line tool to simplify releasing software by updating all
+version strings in your source code by the correct increment. Also creates
+commits and tags:
+
+* version formats are ~~highly~~ configurable
+* works without any VCS, but happily reads tag information from and writes
+  commits and tags to Git ~~and Mercurial if available.~~
+* just handles text files, so it's not specific to any programming language  
