@@ -1,0 +1,29 @@
+name: Tagging pipeline
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v1
+
+      - name: Set Up .NET 5.0.x
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+
+      - name: Test
+        run: |
+          dotnet test
+
+      - name: Build
+        run: dotnet pack -c Release
+
+      - name: Publish to NuGet
+        run: dotnet nuget push -k ${{ secrets.NUGET_KEY }} -s https://www.nuget.org BumpVersion/nupkg/
