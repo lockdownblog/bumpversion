@@ -7,6 +7,7 @@
 
     public class BumpConfigurationManager : IBumpConfigurationManager
     {
+        private string configurationFilePath;
         private string configurationFileContent;
         private TomlTable bumpversionConfiguration;
 
@@ -14,6 +15,7 @@
         {
             if (this.bumpversionConfiguration is null)
             {
+                this.configurationFilePath = configurationFilePath;
                 this.configurationFileContent = File.ReadAllText(configurationFilePath);
                 this.bumpversionConfiguration = Toml.Parse(this.configurationFileContent).ToModel()["bumpversion"] as TomlTable;
             }
@@ -102,6 +104,7 @@
         public void UpdateConfigurationVersion(string currentVersion, string newVersion)
         {
             this.configurationFileContent = this.configurationFileContent.Replace($"\"{currentVersion}\"", $"\"{newVersion}\"");
+            File.WriteAllText(this.configurationFilePath, this.configurationFileContent);
         }
 
         private FileConfiguration GetFileConfiguration(TomlTable bumpversionFileConfiguration)
