@@ -51,13 +51,13 @@
         {
             if (!this.repo.SetUpRepo())
             {
-                this.logger.LogError("Sorry, the current folder is not a git repo!");
+                Console.WriteLine("Sorry, the current folder is not a git repo!");
                 return 1;
             }
 
             if (!this.repo.IsClean)
             {
-                this.logger.LogError("Sorry, your repo is not clean!");
+                Console.WriteLine("Sorry, your repo is not clean!");
                 return 1;
             }
 
@@ -129,6 +129,7 @@
                 Console.WriteLine(message);
             }
 
+            Console.WriteLine("Done, you can now push your changes with");
             return 0;
         }
 

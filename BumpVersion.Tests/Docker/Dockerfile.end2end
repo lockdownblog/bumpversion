@@ -1,0 +1,12 @@
+FROM mcr.microsoft.com/dotnet/sdk:5.0
+
+WORKDIR /src/
+
+ENV PATH ${PATH}:/root/.dotnet/tools
+
+COPY BumpVersion/ ./
+
+RUN dotnet pack && \
+    dotnet tool install --global --add-source /src/nupkg BumpVersion
+
+ENTRYPOINT ["bash"]
