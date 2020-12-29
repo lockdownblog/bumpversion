@@ -9,4 +9,17 @@ COPY BumpVersion/ ./
 RUN dotnet pack && \
     dotnet tool install --global --add-source /src/nupkg BumpVersion
 
-ENTRYPOINT ["bash"]
+WORKDIR /test/
+
+COPY BumpVersion.Tests/Docker/.bumpversion.cfg /test/
+
+RUN git init && \
+    git add . && \
+    git config --global user.email "you@example.com" && \
+    git config --global user.name "Your Name" && \
+    git commit -m "initial" && \ 
+    bumpversion major && \ 
+    bumpversion minor && \
+    bumpversion patch
+
+CMD ["bash"]
