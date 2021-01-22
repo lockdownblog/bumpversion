@@ -5,6 +5,7 @@
     using System.ComponentModel.DataAnnotations;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
     using System.Text.RegularExpressions;
     using global::BumpVersion.Configuration;
     using global::BumpVersion.Utils;
@@ -12,6 +13,7 @@
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
 
+    [VersionOptionFromMember("--version", MemberName = nameof(GetVersion))]
     public class BumpVersion
     {
         private const string ConfigurationFileName = ".bumpversion.cfg";
@@ -30,6 +32,9 @@
         [Argument(0)]
         [Required]
         public string Part { get; }
+
+        public static string GetVersion()
+            => typeof(BumpVersion).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
 
         public static int Main(string[] args)
         {
